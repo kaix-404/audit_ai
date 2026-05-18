@@ -100,8 +100,6 @@ export default function LeadForm() {
 
       const result = await finalizeRes.json();
 
-      console.log("PDF URL:", result.pdfUrl);
-
       setPdfUrl(result.pdfUrl);
     } catch (error) {
       console.error("Handle Submit Error:", error);
