@@ -20,15 +20,7 @@ export async function POST(req: Request) {
     );
 
     // Convert PDF to stream
-    const pdfStream = await pdf(pdfDocument).toBuffer();
-
-    const chunks: Uint8Array[] = [];
-
-    for await (const chunk of pdfStream as any) {
-      chunks.push(chunk);
-    }
-
-    const pdfBuffer = Buffer.concat(chunks);
+    const pdfBuffer = await pdf(pdfDocument).toBuffer();
 
     // Ensure public/pdfs directory exists
     const pdfDir = path.join(
@@ -54,7 +46,15 @@ export async function POST(req: Request) {
     );
 
     // Save PDF locally
-    fs.writeFileSync(filePath, pdfBuffer);
+    const chunks: Uint8Array[] = [];
+
+    for await (const chunk of pdfBuffer as any) {
+      chunks.push(chunk);
+    }
+
+    const finalBuffer = Buffer.concat(chunks);
+
+    fs.writeFileSync(filePath, finalBuffer);
 
     // Public URL for frontend
     const pdfUrl = `${baseUrl}/pdfs/${fileName}`;
