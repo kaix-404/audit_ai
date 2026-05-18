@@ -11,5 +11,5 @@ export async function generateAudit(
     return response.message.content;
   }
 
-  return JSON.stringify(response.message.content);
+  return JSON.stringify(response.message?.content);
 }
