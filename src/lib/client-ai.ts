@@ -7,7 +7,7 @@ export async function generateAudit(
     model: "x-ai/grok-4-fast",
   });
 
-  if (typeof response.message.content === "string") {
+  if (typeof response.message?.content === "string") {
     return response.message.content;
   }
 
