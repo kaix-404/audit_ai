@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { pdf } from "@react-pdf/renderer";
-import fs from "fs";
-import path from "path";
 import ReportTemplate from "../../../components/ReportTemplate";
 import { sendAuditEmail } from "../../../lib/sendEmail";
 
@@ -22,30 +20,6 @@ export async function POST(req: Request) {
     // Convert PDF to stream
     const pdfBuffer = await pdf(pdfDocument).toBuffer();
 
-    // Ensure public/pdfs directory exists
-    const pdfDir = path.join(
-      process.cwd(),
-      "public/pdfs"
-    );
-
-    if (!fs.existsSync(pdfDir)) {
-      fs.mkdirSync(pdfDir, {
-        recursive: true,
-      });
-    }
-
-    // Generate filename
-    const fileName = `${company
-      .replace(/\s+/g, "-")
-      .toLowerCase()}-audit.pdf`;
-
-    // Absolute file path
-    const filePath = path.join(
-      pdfDir,
-      fileName
-    );
-
-    // Save PDF locally
     const chunks: Uint8Array[] = [];
 
     for await (const chunk of pdfBuffer as any) {
@@ -54,17 +28,16 @@ export async function POST(req: Request) {
 
     const finalBuffer = Buffer.concat(chunks);
 
-    fs.writeFileSync(filePath, finalBuffer);
+    const base64Pdf = finalBuffer.toString("base64");
 
-    // Public URL for frontend
-    const pdfUrl = `${baseUrl}/pdfs/${fileName}`;
+    const pdfUrl = `data:application/pdf;base64,${base64Pdf}`;
 
     // Send email separately
     try {
       await sendAuditEmail({
-        email,
+        email: body.email,
         company,
-        pdfUrl,
+        pdfBuffer: finalBuffer,
       });
 
       console.log(

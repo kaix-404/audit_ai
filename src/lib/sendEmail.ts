@@ -7,17 +7,18 @@ const resend = new Resend(
 export async function sendAuditEmail({
   email,
   company,
-  pdfUrl,
+  pdfBuffer,
 }: {
   email: string;
   company: string;
-  pdfUrl: string;
+  pdfBuffer: Buffer;
 }) {
   try {
     await resend.emails.send({
       from: "AuditAI <onboarding@resend.dev>",
       to: email,
       subject: `Your AI Business Audit for ${company}`,
+
       html: `
         <div style="font-family: Arial, sans-serif; padding: 24px;">
           <h1>Your AI Business Audit is Ready</h1>
@@ -27,22 +28,18 @@ export async function sendAuditEmail({
             your executive business audit report.
           </p>
 
-          <a
-            href="${pdfUrl}"
-            style="
-              display:inline-block;
-              margin-top:20px;
-              padding:12px 20px;
-              background:black;
-              color:white;
-              text-decoration:none;
-              border-radius:10px;
-            "
-          >
-            Download Audit PDF
-          </a>
+          <p>
+            Your PDF audit report is attached to this email.
+          </p>
         </div>
       `,
+
+      attachments: [
+        {
+          filename: `${company}-audit.pdf`,
+          content: pdfBuffer.toString("base64"),
+        },
+      ],
     });
 
     console.log("Email sent successfully");
